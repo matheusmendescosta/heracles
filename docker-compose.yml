@@ -1,0 +1,45 @@
+services:
+  postgresdb:
+    container_name: postgresdb
+    image: postgres:16.1
+    restart: always
+    ports:
+      - ${POSTGRES_PORT}
+    volumes:
+      - ${POSGRESDB_VOLUME_PATH}/.postgresdb-data:/var/lib/postgresql/data
+      - ./init-postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
+    networks:
+      - backend-network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+
+  postgres-gui:
+    image: dpage/pgadmin4:8.2
+    container_name: postgres-gui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
+    ports:
+      - ${PGADMIN_LISTEN_PORT}:${PGADMIN_LISTEN_PORT}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    name: backend-network
+    driver: bridge
+    external: false
+
+volumes:
+  pgadmin_data:

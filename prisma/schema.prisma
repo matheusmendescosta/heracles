@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMS ---
+
+enum UserRole {
+  ADMIN  @map("admin")
+  SELLER @map("seller")
+}
+
+enum BudgetStatus {
+  DRAFT    @map("draft")
+  SENT     @map("sent")
+  APPROVED @map("approved")
+  REJECTED @map("rejected")
+  EXPIRED  @map("expired")
+}
+
+// --- ACTORS AND CLIENTS ---
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String?  @map("name")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(SELLER)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  budgets Budget[] 
+
+  @@map("users")
+}
+
+model Client {
+  id        Int       @id @default(autoincrement())
+  name      String    @map("name")
+  document  String?   @map("document")
+  email     String?
+  phone     String?   @map("phone")
+  address   String?   @map("address")
+  createdAt DateTime? @default(now()) @map("created_at")
+
+  budgets Budget[] // Relation: one client has many budgets
+
+  @@map("clients")
+}
+
+// --- CATALOG (Flow 1 - Admin) ---
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  name        String  @map("name")
+  description String? @map("description")
+  active      Boolean @default(true) @map("active")
+
+  variants ProductVariant[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id           Int     @id @default(autoincrement())
+  productId    Int     @map("product_id")
+  variantName  String? @map("variant_name")
+  sku          String? @unique
+  currentPrice Decimal @map("current_price") @db.Decimal(10, 2)
+  currentStock Int?    @default(0) @map("current_stock")
+
+  product     Product      @relation(fields: [productId], references: [id])
+  budgetItems BudgetItem[]
+
+  @@map("product_variants")
+}
+
+model Service {
+  id          Int     @id @default(autoincrement())
+  name        String  @map("name")
+  description String? @map("description")
+  active      Boolean @default(true) @map("active")
+
+  variants ServiceVariant[]
+
+  @@map("services")
+}
+
+model ServiceVariant {
+  id           Int     @id @default(autoincrement())
+  serviceId    Int     @map("service_id")
+  variantName  String? @map("variant_name")
+  currentPrice Decimal @map("current_price") @db.Decimal(10, 2)
+
+  service     Service      @relation(fields: [serviceId], references: [id])
+  budgetItems BudgetItem[]
+
+  @@map("service_variants")
+}
+
+// --- BUDGETS (Flow 2 - Sales) ---
+
+model Budget {
+  id          Int          @id @default(autoincrement())
+  clientId    Int          @map("client_id")
+  userId      Int          @map("user_id") 
+  status      BudgetStatus @default(DRAFT)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  validUntil  DateTime?    @map("valid_until") @db.Date
+  totalAmount Decimal?     @map("total_amount") @db.Decimal(10, 2) 
+  notes       String?      @map("notes")
+
+  client Client       @relation(fields: [clientId], references: [id])
+  user   User         @relation(fields: [userId], references: [id])
+  items  BudgetItem[]
+
+  @@map("budgets")
+}
+
+model BudgetItem {
+  id               Int  @id @default(autoincrement())
+  budgetId         Int  @map("budget_id")
+  productVariantId Int? @map("product_variant_id")
+  serviceVariantId Int? @map("service_variant_id")
+
+
+  quantity          Int      @default(1) @map("quantity")
+  unitPriceSnapshot Decimal  @map("unit_price_snapshot") @db.Decimal(10, 2)
+  subtotal          Decimal? @map("subtotal") @db.Decimal(10, 2)
+
+  budget         Budget          @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  productVariant ProductVariant? @relation(fields: [productVariantId], references: [id])
+  serviceVariant ServiceVariant? @relation(fields: [serviceVariantId], references: [id])
+
+  @@map("budget_items")
+}
