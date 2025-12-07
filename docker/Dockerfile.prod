@@ -1,0 +1,23 @@
+# Stage 1: Builder
+FROM node:20-alpine AS builder
+
+# Create app directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json (or yarn.lock)
+COPY package*.json ./
+
+# Install dependencies, including dev dependencies for Prisma CLI
+RUN npm install
+
+# Copy Prisma schema and related files
+COPY prisma ./prisma/
+
+# Copy the rest of the application code
+COPY . .
+
+# Generate Prisma Client (required for type-safety and database interaction)
+RUN npx prisma generate
+
+# Build the NestJS application
+RUN npm run build
