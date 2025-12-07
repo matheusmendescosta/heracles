@@ -45,6 +45,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./prisma:/app/prisma
+      - ./node_modules:/app/node_modules
     depends_on:
       postgresdb:
         condition: service_healthy 
