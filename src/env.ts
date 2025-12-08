@@ -14,7 +14,6 @@ export const envSchema = z.object({
   PGADMIN_DEFAULT_PASSWORD: z.string(),
   PGADMIN_LISTEN_PORT: z.coerce.number().default(8082),
   DATABASE_URL: z.string().url(),
-  JWT_SECRET: z.string().min(8),
 });
 
 export type Env = z.infer<typeof envSchema>;
