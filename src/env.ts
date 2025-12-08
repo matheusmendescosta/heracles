@@ -4,6 +4,8 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['dev', 'production', 'test']).default('dev'),
   API_PORT: z.coerce.number().default(3333),
   PRISMA_STUDIO_PORT: z.coerce.number().default(5555),
+  JWT_SECRET_KEY: z.string(),
+  JWT_PUBLIC_KEY: z.string(),
   POSGRESDB_VOLUME_PATH: z.string(),
   POSTGRES_PORT: z.coerce.number().default(5432),
   POSTGRES_USER: z.string(),

@@ -1,11 +1,11 @@
 import {
-    Body,
-    ConflictException,
-    Controller,
-    Post,
-    UsePipes,
+  Body,
+  ConflictException,
+  Controller,
+  Post,
+  UsePipes,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { Role } from './../generated/prisma/client';
 import { hash } from 'bcryptjs';
 import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe';
 import { PrismaService } from 'src/prisma/prisma.service';
