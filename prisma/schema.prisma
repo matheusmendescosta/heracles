@@ -74,9 +74,26 @@ model Product {
   updatedAt DateTime @updatedAt
 
   // Reverse relation (optional, but useful to know where the product was used)
-  quoteItems QuoteItem[]
+  quoteItems       QuoteItem[]
+  productOptionals ProductOptional[]
 
   @@map("products")
+}
+
+model ProductOptional {
+  id          String  @id @default(uuid())
+  name        String // Ex: "Extended Warranty"
+  description String?
+  price       Decimal @db.Decimal(10, 2) // Additional value for this option
+
+  // Belongs to which product?
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("product_optionals")
 }
 
 model Service {
