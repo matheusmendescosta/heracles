@@ -6,6 +6,8 @@ import { CreateAccountController } from './controllers/create-account.controller
 import { CreateClientController } from './controllers/create-client.controller';
 import { envSchema } from './env';
 import { PrismaService } from './prisma/prisma.service';
+import { CreateServicesController } from './controllers/create-services.controller';
+import { CreateServiceWithOptionsController } from './controllers/create-service-with-options.controller';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { PrismaService } from './prisma/prisma.service';
     CreateAccountController,
     AuthenticateController,
     CreateClientController,
+    CreateServicesController,
+    CreateServiceWithOptionsController,
   ],
   providers: [PrismaService],
 })
