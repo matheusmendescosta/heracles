@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 import { AuthenticateController } from './controllers/authenticate-controller';
 import { CreateAccountController } from './controllers/create-account.controller';
 import { CreateClientController } from './controllers/create-client.controller';
@@ -20,6 +21,7 @@ import { PrismaService } from './prisma/prisma.service';
       isGlobal: true,
     }),
     AuthModule,
+    IntegrationsModule,
   ],
   controllers: [
     AuthenticateController,
@@ -33,5 +35,6 @@ import { PrismaService } from './prisma/prisma.service';
     GetQuoteController,
   ],
   providers: [PrismaService],
+  exports: [PrismaService],
 })
 export class AppModule {}

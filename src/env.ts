@@ -14,6 +14,11 @@ export const envSchema = z.object({
   PGADMIN_DEFAULT_PASSWORD: z.string(),
   PGADMIN_LISTEN_PORT: z.coerce.number().default(8082),
   DATABASE_URL: z.string().url(),
+
+  // Conta Azul OAuth Integration
+  CONTA_AZUL_CLIENT_ID: z.string().optional(),
+  CONTA_AZUL_CLIENT_SECRET: z.string().optional(),
+  CONTA_AZUL_REDIRECT_URI: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
