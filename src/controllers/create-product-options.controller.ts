@@ -1,34 +1,38 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { CurrentUser } from 'src/auth/current-user-decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe';
 import { PrismaService } from 'src/prisma/prisma.service';
 import z from 'zod';
 
-const CreateServiceSchema = z.object({
+const ProductOptionsBodySchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   price: z.number(),
+  productId: z.string(),
+  selected: z.boolean().optional().default(false),
 });
 
-type createServiceBody = z.infer<typeof CreateServiceSchema>;
+type productOptionsBody = z.infer<typeof ProductOptionsBodySchema>;
 
 @Controller()
-export class CreateServicesController {
+export class CreateProductOptionsController {
   constructor(private prisma: PrismaService) {}
 
-  @Post('/services')
+  @Post('/products/options')
   @UseGuards(AuthGuard('jwt'))
   async handler(
-    @Body(new ZodValidationPipe(CreateServiceSchema)) body: createServiceBody,
+    @Body(new ZodValidationPipe(ProductOptionsBodySchema))
+    body: productOptionsBody,
   ) {
-    const { name, description, price } = body;
+    const { name, description, price, productId, selected } = body;
 
-    await this.prisma.service.create({
+    await this.prisma.productOptional.create({
       data: {
         name,
         description,
         price,
+        productId,
+        selected,
       },
     });
   }

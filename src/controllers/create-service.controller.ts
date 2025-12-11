@@ -4,7 +4,7 @@ import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe';
 import { PrismaService } from 'src/prisma/prisma.service';
 import z from 'zod';
 
-const CreateServiceWithOptionsSchema = z.object({
+const CreateServiceSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   price: z.number(),
@@ -20,19 +20,17 @@ const CreateServiceWithOptionsSchema = z.object({
     .default([]),
 });
 
-type CreateServiceWithOptionsBody = z.infer<
-  typeof CreateServiceWithOptionsSchema
->;
+type createServiceBody = z.infer<typeof CreateServiceSchema>;
 
 @Controller()
-export class CreateServiceWithOptionsController {
+export class CreateServiceController {
   constructor(private prisma: PrismaService) {}
 
-  @Post('/services/with-options')
+  @Post('/services')
   @UseGuards(AuthGuard('jwt'))
   async handler(
-    @Body(new ZodValidationPipe(CreateServiceWithOptionsSchema))
-    body: CreateServiceWithOptionsBody,
+    @Body(new ZodValidationPipe(CreateServiceSchema))
+    body: createServiceBody,
   ) {
     const { name, description, price, options } = body;
 
@@ -41,21 +39,20 @@ export class CreateServiceWithOptionsController {
         name,
         description,
         price,
-        options: options.length > 0 ? {
-          create: options,
-        } : undefined,
+        serviceOptions:
+          options.length > 0
+            ? {
+                create: options,
+              }
+            : undefined,
       },
       include: {
-        options: true,
+        serviceOptions: true,
       },
     });
 
     return {
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.price,
-      options: service.options,
+      service,
     };
   }
 }

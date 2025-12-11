@@ -4,10 +4,14 @@ import { AuthModule } from './auth/auth.module';
 import { AuthenticateController } from './controllers/authenticate-controller';
 import { CreateAccountController } from './controllers/create-account.controller';
 import { CreateClientController } from './controllers/create-client.controller';
+import { CreateProductOptionsController } from './controllers/create-product-options.controller';
+import { CreateProductController } from './controllers/create-product.controller';
+import { CreateQuoteController } from './controllers/create-quote.controller';
+import { CreateServiceController } from './controllers/create-service.controller';
+import { CreateServicesOptionsController } from './controllers/create-services-options.controller';
+import { GetQuoteController } from './controllers/get-quote.controller';
 import { envSchema } from './env';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateServicesController } from './controllers/create-services.controller';
-import { CreateServiceWithOptionsController } from './controllers/create-service-with-options.controller';
 
 @Module({
   imports: [
@@ -18,11 +22,15 @@ import { CreateServiceWithOptionsController } from './controllers/create-service
     AuthModule,
   ],
   controllers: [
-    CreateAccountController,
     AuthenticateController,
+    CreateAccountController,
     CreateClientController,
-    CreateServicesController,
-    CreateServiceWithOptionsController,
+    CreateProductController,
+    CreateProductOptionsController,
+    CreateServiceController,
+    CreateServicesOptionsController,
+    CreateQuoteController,
+    GetQuoteController,
   ],
   providers: [PrismaService],
 })

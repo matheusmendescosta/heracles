@@ -66,7 +66,7 @@ model Product {
   id          String  @id @default(uuid())
   name        String
   description String?
-  price       Decimal @db.Decimal(10, 2) // Ex: 999.90
+  price       Decimal @default(0) @db.Decimal(10, 2) // Ex: 999.90
   sku         String? @unique // Stock Keeping Unit
   stock       Int     @default(0)
 
@@ -74,8 +74,8 @@ model Product {
   updatedAt DateTime @updatedAt
 
   // Reverse relation (optional, but useful to know where the product was used)
-  quoteItems       QuoteItem[]
   productOptionals ProductOptional[]
+  quoteItems       QuoteItem[]
 
   @@map("products")
 }
@@ -85,6 +85,7 @@ model ProductOptional {
   name        String // Ex: "Extended Warranty"
   description String?
   price       Decimal @db.Decimal(10, 2) // Additional value for this option
+  selected    Boolean @default(false)
 
   // Belongs to which product?
   productId String?
@@ -100,15 +101,14 @@ model Service {
   id          String  @id @default(uuid())
   name        String
   description String?
-  price       Decimal @db.Decimal(10, 2)
+  price       Decimal @default(0) @db.Decimal(10, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relation: A service has many available options
-  options ServiceOption[]
-
-  quoteItems QuoteItem[]
+  serviceOptions ServiceOption[]
+  quoteItems     QuoteItem[]
 
   @@map("services")
 }
@@ -119,6 +119,7 @@ model ServiceOption {
   name        String // Ex: "Advanced AI Plan"
   description String?
   price       Decimal @db.Decimal(10, 2) // Additional value for this option
+  selected    Boolean @default(false)
 
   // Belongs to which service?
   serviceId String
@@ -184,15 +185,6 @@ model QuoteItem {
   description String
   quantity    Int     @default(1)
   unitPrice   Decimal @db.Decimal(10, 2)
-
-  // NEW FIELD: Details of the selected options
-  // Here we will save a JSON with the selected options for this item.
-  // Example JSON structure:
-  // [
-  //   { "name": "Advanced AI Plan", "price": 500.00 },
-  //   { "name": "Dedicated Server", "price": 200.00 }
-  // ]
-  selectedOptions Json?
 
   total Decimal @db.Decimal(10, 2)
 
