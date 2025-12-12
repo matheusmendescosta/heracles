@@ -3,10 +3,11 @@ import { OAuthService } from './oauth/oauth.service';
 import { OAuthController } from './oauth/oauth.controller';
 import { IntegrationRepository } from './repositories/integration.repository';
 import { ContaAzulProvider } from './providers/conta-azul/conta-azul.provider';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
+  providers: [PrismaService, OAuthService, IntegrationRepository, ContaAzulProvider],
   controllers: [OAuthController],
-  providers: [OAuthService, IntegrationRepository, ContaAzulProvider],
-  exports: [OAuthService, IntegrationRepository],
+  exports: [OAuthService, IntegrationRepository, PrismaService],
 })
 export class IntegrationsModule {}

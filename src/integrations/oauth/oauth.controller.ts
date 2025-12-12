@@ -17,7 +17,6 @@ export class OAuthController {
   constructor(private oauthService: OAuthService) {}
 
   @Get('authorize')
-  @Redirect()
   authorize(@Query('provider') provider: string) {
     if (!provider) {
       throw new BadRequestException('Provider is required');
@@ -30,8 +29,8 @@ export class OAuthController {
     );
 
     return {
-      url: authorizationUrl,
-      statusCode: 302,
+      authorizationUrl,
+      message: 'Copy the URL below and paste in your browser',
     };
   }
 
