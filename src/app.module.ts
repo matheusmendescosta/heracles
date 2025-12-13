@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { AuthenticateController } from './controllers/authenticate-controller';
@@ -20,6 +21,7 @@ import { PrismaService } from './prisma/prisma.service';
       validate: (env) => envSchema.parse(env),
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     IntegrationsModule,
   ],

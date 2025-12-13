@@ -92,4 +92,85 @@ export class IntegrationRepository {
       data: { isActive },
     });
   }
+
+  /**
+   * Encontra integrações ativas que expiram em X minutos
+   * Utilizado pelo TokenRefreshService para renovação proativa de tokens
+   * @param minutesUntilExpiry Minutos até a expiração (ex: 5 para 5 minutos)
+   * @returns Lista de integrações que expiram em breve
+   */
+  async findExpiringTokens(minutesUntilExpiry: number): Promise<Integration[]> {
+    const now = new Date();
+    const expiryThreshold = new Date(now.getTime() + minutesUntilExpiry * 60000);
+
+    return this.prisma.integration.findMany({
+      where: {
+        isActive: true,
+        accessTokenExpiresAt: {
+          lte: expiryThreshold, // Expira no máximo em 5 minutos
+          gte: now,             // Mas ainda NÃO expirou
+        },
+        refreshToken: {
+          not: null, // Apenas integrações com refresh token
+        },
+      },
+      orderBy: {
+        accessTokenExpiresAt: 'asc',
+      },
+    });
+  }
+
+  /**
+   * Debug: Busca TODAS as integrações ativas com seus tokens
+   * Útil para investigar por que nenhum token está expirando
+   */
+  async findAllActiveIntegrations(): Promise<
+    Array<{
+      id: string;
+      provider: string;
+      userId: string;
+      accessTokenExpiresAt: Date;
+      refreshToken: string | null;
+      isActive: boolean;
+      createdAt: Date;
+    }>
+  > {
+    return this.prisma.integration.findMany({
+      where: {
+        isActive: true,
+        refreshToken: {
+          not: null,
+        },
+      },
+      select: {
+        id: true,
+        provider: true,
+        userId: true,
+        accessTokenExpiresAt: true,
+        refreshToken: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: {
+        accessTokenExpiresAt: 'asc',
+      },
+    });
+  }
+
+  /**
+   * Remove integrações inativas criadas antes de uma data específica
+   * Utilizado para limpeza periódica de dados obsoletos
+   * @param beforeDate Data limite para remoção
+   * @returns Quantidade de registros removidos
+   */
+  async deleteInactiveOlderThan(beforeDate: Date): Promise<{ count: number }> {
+    return this.prisma.integration.deleteMany({
+      where: {
+        isActive: false,
+        createdAt: {
+          lt: beforeDate,
+        },
+      },
+    });
+  }
 }
