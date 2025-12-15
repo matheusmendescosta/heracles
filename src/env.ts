@@ -10,6 +10,7 @@ export const envSchema = z.object({
   POSTGRES_PORT: z.coerce.number().default(5432),
   POSTGRES_USER: z.string(),
   POSTGRES_PASSWORD: z.string(),
+  PGTZ: z.string(),
   PGADMIN_DEFAULT_EMAIL: z.string().email(),
   PGADMIN_DEFAULT_PASSWORD: z.string(),
   PGADMIN_LISTEN_PORT: z.coerce.number().default(8082),

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Get, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
@@ -14,6 +14,8 @@ import { CreateServicesOptionsController } from './controllers/create-services-o
 import { GetQuoteController } from './controllers/get-quote.controller';
 import { envSchema } from './env';
 import { PrismaService } from './prisma/prisma.service';
+import { GetServicesController } from './controllers/get-services.controller';
+import { GetProductsController } from './controllers/get-products.controller';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { PrismaService } from './prisma/prisma.service';
     CreateServicesOptionsController,
     CreateQuoteController,
     GetQuoteController,
+    GetServicesController,
+    GetProductsController,
   ],
   providers: [PrismaService],
   exports: [PrismaService],
