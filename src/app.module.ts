@@ -16,6 +16,7 @@ import { envSchema } from './env';
 import { PrismaService } from './prisma/prisma.service';
 import { GetServicesController } from './controllers/get-services.controller';
 import { GetProductsController } from './controllers/get-products.controller';
+import { GetUserController } from './controllers/get-user.controller';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { GetProductsController } from './controllers/get-products.controller';
     GetQuoteController,
     GetServicesController,
     GetProductsController,
+    GetUserController,
   ],
   providers: [PrismaService],
   exports: [PrismaService],

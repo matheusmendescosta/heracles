@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/current-user-decorator';
 import { userPayload } from 'src/auth/jwt.strategy';
 import { QuoteStatus } from 'src/generated/prisma/enums';
+import { Decimal } from 'src/generated/prisma/internal/prismaNamespace';
 import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe';
 import { PrismaService } from 'src/prisma/prisma.service';
 import z from 'zod';
@@ -30,12 +31,12 @@ const CreateQuoteSchema = z
       .array(
         z.object({
           description: z.string(),
+          quantity: z.number().int().positive(),
+          unitPrice: z.number().positive(),
+          total: z.number().positive(),
           productId: z.string().optional(),
-          quantity: z.number(),
-          unitPrice: z.number(),
-          total: z.number(),
           serviceId: z.string().optional(),
-          selectedOptions: z.any().optional(),
+          selectedOptionIds: z.array(z.string()).optional(),
         }),
       )
       .optional(),
@@ -90,6 +91,58 @@ export class CreateQuoteController {
       throw new Error('Client ID is required');
     }
 
+    // Process items and fetch selected options from database
+    const processedItems = items
+      ? await Promise.all(
+          items.map(async (item) => {
+            let selectedOptions:
+              | { id: string; name: string; price: Decimal }[]
+              | null = null;
+
+            if (item.selectedOptionIds && item.selectedOptionIds.length > 0) {
+              // Fetch product optionals or service options based on item type
+              if (item.productId) {
+                const productOptions =
+                  await this.prisma.productOptional.findMany({
+                    where: {
+                      id: { in: item.selectedOptionIds },
+                      productId: item.productId,
+                    },
+                    select: { id: true, name: true, price: true },
+                  });
+                selectedOptions = productOptions;
+              } else if (item.serviceId) {
+                const serviceOptions = await this.prisma.serviceOption.findMany(
+                  {
+                    where: {
+                      id: { in: item.selectedOptionIds },
+                      serviceId: item.serviceId,
+                    },
+                    select: { id: true, name: true, price: true },
+                  },
+                );
+                selectedOptions = serviceOptions;
+              }
+            }
+
+            const itemData: any = {
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.total,
+              productId: item.productId,
+              serviceId: item.serviceId,
+            };
+
+            if (selectedOptions) {
+              itemData.selectedOptions = selectedOptions;
+            }
+
+            return itemData;
+          }),
+        )
+      : undefined;
+
     await this.prisma.quote.create({
       data: {
         number,
@@ -101,7 +154,10 @@ export class CreateQuoteController {
         validUntil,
         totalValue,
         status,
-        items: items && items.length > 0 ? { create: items } : undefined,
+        items:
+          processedItems && processedItems.length > 0
+            ? { create: processedItems }
+            : undefined,
       },
     });
   }

@@ -188,8 +188,10 @@ model QuoteItem {
   description String
   quantity    Int     @default(1)
   unitPrice   Decimal @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
 
-  total Decimal @db.Decimal(10, 2)
+  // Snapshot das opções selecionadas (Product Optionals ou Service Options)
+  selectedOptions Json?
 
   @@map("quote_items")
 }
