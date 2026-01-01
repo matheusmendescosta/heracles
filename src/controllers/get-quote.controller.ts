@@ -28,6 +28,6 @@ export class GetQuoteController {
       },
     });
 
-    return quotes;
+    return { quotes };
   }
 }

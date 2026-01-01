@@ -1,6 +1,8 @@
-import { Module } from '@nestjs/common';
+import { Get, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { AuthenticateController } from './controllers/authenticate-controller';
 import { CreateAccountController } from './controllers/create-account.controller';
 import { CreateClientController } from './controllers/create-client.controller';
@@ -12,6 +14,9 @@ import { CreateServicesOptionsController } from './controllers/create-services-o
 import { GetQuoteController } from './controllers/get-quote.controller';
 import { envSchema } from './env';
 import { PrismaService } from './prisma/prisma.service';
+import { GetServicesController } from './controllers/get-services.controller';
+import { GetProductsController } from './controllers/get-products.controller';
+import { GetUserController } from './controllers/get-user.controller';
 
 @Module({
   imports: [
@@ -19,7 +24,9 @@ import { PrismaService } from './prisma/prisma.service';
       validate: (env) => envSchema.parse(env),
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
+    IntegrationsModule,
   ],
   controllers: [
     AuthenticateController,
@@ -31,7 +38,11 @@ import { PrismaService } from './prisma/prisma.service';
     CreateServicesOptionsController,
     CreateQuoteController,
     GetQuoteController,
+    GetServicesController,
+    GetProductsController,
+    GetUserController,
   ],
   providers: [PrismaService],
+  exports: [PrismaService],
 })
 export class AppModule {}
