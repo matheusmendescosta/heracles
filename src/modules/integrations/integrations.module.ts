@@ -6,7 +6,7 @@ import { IntegrationRepository } from './repositories/integration.repository';
 import { ContaAzulProvider } from './providers/conta-azul/conta-azul.provider';
 import { TokenRefreshService } from './services/token-refresh.service';
 import { TokenValidationHelper } from './services/token-validation.helper';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Module({
   imports: [ScheduleModule.forRoot()],

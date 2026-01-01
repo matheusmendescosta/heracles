@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TokenValidationHelper } from '../services/token-validation.helper';
+import { TokenValidationHelper } from './token-validation.helper';
 
 /**
  * Exemplo de serviço que integra com a API Conta Azul

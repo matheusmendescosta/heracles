@@ -2,7 +2,7 @@ import { Get, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
-import { IntegrationsModule } from './integrations/integrations.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { AuthenticateController } from './controllers/authenticate-controller';
 import { CreateAccountController } from './controllers/create-account.controller';
 import { CreateClientController } from './controllers/create-client.controller';
