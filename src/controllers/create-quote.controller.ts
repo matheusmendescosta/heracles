@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Logger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/current-user-decorator';
 import { userPayload } from 'src/auth/jwt.strategy';
@@ -6,6 +6,8 @@ import { QuoteStatus } from 'src/generated/prisma/enums';
 import { Decimal } from 'src/generated/prisma/internal/prismaNamespace';
 import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ContaAzulVendaService } from 'src/modules/integrations/services/conta-azul-venda.service';
+import { ContaAzulPessoaService } from 'src/modules/integrations/services/conta-azul-pessoa.service';
 import z from 'zod';
 
 const CreateQuoteSchema = z
@@ -13,6 +15,9 @@ const CreateQuoteSchema = z
     number: z.number(),
     notes: z.string().optional(),
     signatureIp: z.string().optional(),
+    idClienteContaAzul: z.string().optional(),
+    criarClienteNoContaAzul: z.boolean().optional().default(true),
+    criarVendaNoContaAzul: z.boolean().optional().default(true),
     clientId: z.string().optional(),
     client: z
       .object({
@@ -50,7 +55,13 @@ type createQuoteBody = z.infer<typeof CreateQuoteSchema>;
 
 @Controller()
 export class CreateQuoteController {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(CreateQuoteController.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private vendaService: ContaAzulVendaService,
+    private pessoaService: ContaAzulPessoaService,
+  ) {}
 
   @Post('/quotes')
   @UseGuards(AuthGuard('jwt'))
@@ -62,6 +73,9 @@ export class CreateQuoteController {
       number,
       notes,
       signatureIp,
+      idClienteContaAzul,
+      criarClienteNoContaAzul,
+      criarVendaNoContaAzul,
       clientId,
       client,
       signedAt,
@@ -72,6 +86,7 @@ export class CreateQuoteController {
     } = body;
 
     let finalClientId = clientId;
+    let finalIdClienteContaAzul = idClienteContaAzul;
 
     // Create a new client if client data is provided
     if (client) {
@@ -85,6 +100,59 @@ export class CreateQuoteController {
         },
       });
       finalClientId = createdClient.id;
+
+      // Criar cliente também no Conta Azul se solicitado
+      if (criarClienteNoContaAzul) {
+        try {
+          this.logger.log(
+            `Criando cliente no Conta Azul: ${client.name}`,
+          );
+
+          const pessoaCriada = await this.pessoaService.criarCliente(
+            user.sub,
+            client.name,
+            client.email,
+            client.phone,
+          );
+
+          this.logger.debug(
+            `Resposta da API Conta Azul: ${JSON.stringify(pessoaCriada)}`,
+          );
+
+          finalIdClienteContaAzul = pessoaCriada.id;
+
+          this.logger.log(
+            `✅ Cliente criado com sucesso no Conta Azul: ${pessoaCriada.id}`,
+          );
+          
+          this.logger.debug(
+            `ID capturado para criar venda: ${finalIdClienteContaAzul}`,
+          );
+
+          // Salvar o ID do cliente Conta Azul no banco de dados local
+          await this.prisma.client.update({
+            where: { id: finalClientId },
+            data: { idContaAzul: finalIdClienteContaAzul },
+          });
+
+          this.logger.log(
+            `✅ ID do Conta Azul salvo no cliente local: ${finalIdClienteContaAzul}`,
+          );
+
+          // Aguardar 5 segundos para o cliente ficar disponível no Conta Azul
+          this.logger.debug(
+            `Aguardando 5 segundos para o cliente ficar disponível na API...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          this.logger.error(
+            `❌ Erro ao criar cliente no Conta Azul: ${message}`,
+          );
+          // Não lançar erro aqui, apenas registrar
+        }
+      }
     }
 
     if (!finalClientId) {
@@ -143,7 +211,7 @@ export class CreateQuoteController {
         )
       : undefined;
 
-    await this.prisma.quote.create({
+    const quote = await this.prisma.quote.create({
       data: {
         number,
         userId: user.sub,
@@ -160,5 +228,45 @@ export class CreateQuoteController {
             : undefined,
       },
     });
+
+    // Criar venda no Conta Azul se solicitado
+    this.logger.debug(
+      `Debug: criarVendaNoContaAzul=${criarVendaNoContaAzul}, idClienteContaAzul=${finalIdClienteContaAzul}`,
+    );
+
+    if (criarVendaNoContaAzul && finalIdClienteContaAzul) {
+      try {
+        this.logger.log(
+          `Criando venda no Conta Azul para o orçamento ${quote.id}`,
+        );
+
+        await this.vendaService.criarVendaDoOrcamento(
+          user.sub,
+          finalIdClienteContaAzul,
+          number,
+          items || [],
+          totalValue,
+          notes,
+        );
+
+        this.logger.log(
+          `✅ Venda criada com sucesso no Conta Azul para orçamento ${quote.id}`,
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `❌ Erro ao criar venda no Conta Azul: ${message}`,
+        );
+        // Não lançar erro aqui, apenas registrar para não falhar a criação do orçamento
+      }
+    }
+
+    return {
+      id: quote.id,
+      number: quote.number,
+      status: quote.status,
+      message: 'Orçamento criado com sucesso',
+    };
   }
 }

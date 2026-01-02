@@ -1,22 +1,11 @@
-import { Get, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
-import { IntegrationsModule } from './modules/integrations/integrations.module';
-import { AuthenticateController } from './controllers/authenticate-controller';
-import { CreateAccountController } from './controllers/create-account.controller';
-import { CreateClientController } from './controllers/create-client.controller';
-import { CreateProductOptionsController } from './controllers/create-product-options.controller';
-import { CreateProductController } from './controllers/create-product.controller';
-import { CreateQuoteController } from './controllers/create-quote.controller';
-import { CreateServiceController } from './controllers/create-service.controller';
-import { CreateServicesOptionsController } from './controllers/create-services-options.controller';
-import { GetQuoteController } from './controllers/get-quote.controller';
 import { envSchema } from './env';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { ControllersModule } from './controllers/controllers.module';
 import { PrismaService } from './prisma/prisma.service';
-import { GetServicesController } from './controllers/get-services.controller';
-import { GetProductsController } from './controllers/get-products.controller';
-import { GetUserController } from './controllers/get-user.controller';
 
 @Module({
   imports: [
@@ -27,20 +16,7 @@ import { GetUserController } from './controllers/get-user.controller';
     ScheduleModule.forRoot(),
     AuthModule,
     IntegrationsModule,
-  ],
-  controllers: [
-    AuthenticateController,
-    CreateAccountController,
-    CreateClientController,
-    CreateProductController,
-    CreateProductOptionsController,
-    CreateServiceController,
-    CreateServicesOptionsController,
-    CreateQuoteController,
-    GetQuoteController,
-    GetServicesController,
-    GetProductsController,
-    GetUserController,
+    ControllersModule,
   ],
   providers: [PrismaService],
   exports: [PrismaService],

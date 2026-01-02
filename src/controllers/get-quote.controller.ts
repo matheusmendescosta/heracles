@@ -1,33 +1,27 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { PrismaService } from 'src/prisma/prisma.service';
+// import z from 'zod';
 
+// const quoteParamsSchema = z.object({
+//   id: z.string(),
+// });
+
+// type GetQuoteParams = z.infer<typeof quoteParamsSchema>;
 @Controller()
 export class GetQuoteController {
   constructor(private prisma: PrismaService) {}
 
-  @Get('/quotes')
-  //@UseGuards(AuthGuard('jwt'))
-  async handler() {
-    const quotes = await this.prisma.quote.findMany({
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/quote/:id')
+  async handler(@Param('id') id: string) {
+    const quote = await this.prisma.quote.findUnique({
+      where: { id },
       include: {
-        client: true,
-        items: {
-          include: {
-            service: {
-              include: {
-                serviceOptions: true,
-              },
-            },
-            product: {
-              include: {
-                productOptionals: true,
-              },
-            },
-          },
-        },
+        items: true,
       },
     });
 
-    return { quotes };
+    return { quote };
   }
 }
