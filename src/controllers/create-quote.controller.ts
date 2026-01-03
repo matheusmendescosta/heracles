@@ -141,9 +141,9 @@ export class CreateQuoteController {
 
           // Aguardar 5 segundos para o cliente ficar disponível no Conta Azul
           this.logger.debug(
-            `Aguardando 5 segundos para o cliente ficar disponível na API...`,
+            `Aguardando 3 segundos para o cliente ficar disponível na API...`,
           );
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
         } catch (error) {
           const message =
             error instanceof Error ? error.message : String(error);

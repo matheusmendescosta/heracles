@@ -19,6 +19,7 @@ export class GetQuoteController {
       where: { id },
       include: {
         items: true,
+        client: true,
       },
     });
 

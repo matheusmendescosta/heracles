@@ -11,7 +11,6 @@ import { GetQuoteController } from './get-quote.controller';
 import { GetUserController } from './get-user.controller';
 import { GetProductsController } from './list-products.controller';
 import { ListQuoteController } from './list-quotes.controller';
-import { GetServicesController } from './list-services.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { IntegrationsModule } from '../modules/integrations/integrations.module';
 
@@ -27,7 +26,6 @@ import { IntegrationsModule } from '../modules/integrations/integrations.module'
     CreateServicesOptionsController,
     CreateQuoteController,
     ListQuoteController,
-    GetServicesController,
     GetProductsController,
     GetUserController,
     GetQuoteController,

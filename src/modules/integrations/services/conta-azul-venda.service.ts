@@ -171,7 +171,7 @@ export class ContaAzulVendaService {
           id: item.id,
         })),
         condicao_pagamento: {
-          tipo_pagamento: 'DINHEIRO',
+          tipo_pagamento: 'PIX_PAGAMENTO_INSTANTANEO',
           opcao_condicao_pagamento: 'À vista',
           parcelas: [
             {
